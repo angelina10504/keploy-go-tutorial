@@ -1,0 +1,237 @@
+export const metadata = {
+  title: 'Test a Go API without writing tests — Keploy + Gin + MongoDB on macOS',
+  description:
+    'A beginner-friendly walkthrough of the Keploy Gin + MongoDB quickstart, run natively on an Apple Silicon Mac.',
+}
+
+# Test a Go API without writing a single test
+
+**Keploy + Gin + MongoDB, natively on macOS**
+
+The official Keploy quickstart for Gin + MongoDB covers Docker and Linux/WSL. I ran it natively on my MacBook (Apple Silicon, no Docker) and wrote down every step, every confusing message, and the moment it clicked. This is that walkthrough.
+
+<Callout type="info" title="Tested with">
+Keploy 3.8.47 (Free) · Go 1.27.1 · MongoDB 7.0 · macOS on Apple Silicon · September 2026. Newer versions may print slightly different logs.
+</Callout>
+
+## What you'll do
+
+You'll take a small URL-shortener API written in Go, use it normally for a minute, and walk away with API tests and database mocks you never wrote. Then you'll switch the database off and watch the tests still pass.
+
+<FlowDiagram />
+
+## Why this is useful for Go developers
+
+Writing API tests usually means two chores: writing the test code, and setting up a database (or hand-written fakes) every time the tests run.
+
+Keploy skips both. It **records** real traffic while you use your app, saving each request and response as a **test case** and each database conversation as a **mock**. Later it **replays** the requests and answers the app's database calls from those mocks. If your API still responds the same way, the tests pass.
+
+## Before you start
+
+You need:
+
+- A Mac with Apple Silicon (Keploy runs natively on it, no Docker needed)
+- [Homebrew](https://brew.sh)
+- Go (`brew install go`)
+- MongoDB (`mongod` on your PATH)
+- A free Keploy account (the first `keploy record` asks you to sign in)
+
+<Callout type="warning" title="Keep the project out of iCloud">
+If your Mac syncs **Desktop** and **Documents** to iCloud, don't clone there. iCloud can offload files to the cloud, and your app will hang while macOS downloads them one by one. That cost me a confusing five-minute hang on another project. Use a folder like `~/dev` instead.
+</Callout>
+
+## Run the quickstart
+
+<Steps>
+
+### Install Keploy
+
+```bash
+curl --silent -O -L https://keploy.io/install.sh && source install.sh
+keploy -v
+```
+
+You should see a version number. Keploy intercepts traffic in user space on macOS, so there's no `sudo` and no VM.
+
+### Clone the sample app
+
+```bash
+mkdir -p ~/dev && cd ~/dev
+git clone https://github.com/keploy/samples-go.git
+cd samples-go/gin-mongo
+go mod download
+```
+
+### Point the app at your local MongoDB
+
+The sample is written for Docker, where the database lives at `mongoDb:27017` (a container name). On your Mac, it's at `127.0.0.1:27017`.
+
+```bash
+sed -i '' 's/mongoDb:27017/127.0.0.1:27017/' main.go
+grep -n "27017" main.go
+```
+
+The `grep` should now show `127.0.0.1:27017`.
+
+<Callout type="tip" title="Use 127.0.0.1, not localhost">
+The docs mention a line number for this change, but in the current code the line is different. Search for the string instead. Also, use `127.0.0.1` rather than `localhost`: on macOS, `localhost` resolves to IPv6 (`::1`) first, while `mongod` below only listens on IPv4. With `localhost`, Keploy quietly reroutes the connection and prints a dual-stack warning.
+</Callout>
+
+### Start a throwaway MongoDB
+
+```bash
+mkdir -p ~/mongo-keploy-go
+mongod --dbpath ~/mongo-keploy-go --bind_ip 127.0.0.1 --port 27017 \
+  --fork --logpath ~/mongo-keploy-go/mongod.log
+```
+
+`--fork` runs it in the background. Look for `child process started successfully`.
+
+### Record some traffic
+
+In your first terminal tab:
+
+```bash
+keploy record -c "go run main.go handler.go"
+```
+
+`-c` is the command Keploy uses to start your app. Wait until you see:
+
+```text
+INFO  Started ingress forwarding  {"orig_port": 8080, ...}
+```
+
+That means the app is up and Keploy is listening. Now open a **second tab** and use the API:
+
+```bash
+curl -X POST http://localhost:8080/url \
+  -H 'content-type: application/json' \
+  -d '{"url":"https://google.com"}'
+```
+
+You'll get back a short link. Mine was `http://localhost:8080/Lhr4BWAi`, the exact same code as in the official docs. Open it:
+
+```bash
+curl -i http://localhost:8080/Lhr4BWAi
+```
+
+You should get a `303` redirect to Google. Back in the first tab, Keploy confirms each capture:
+
+```text
+INFO  🟠 Keploy has captured test cases for the user's application.  {"testcase name": "post-url-1"}
+INFO  🟠 Keploy has captured test cases for the user's application.  {"testcase name": "get-lhr4bwai-1"}
+```
+
+<Callout type="warning" title="Wait for the capture lines before stopping">
+If you press Ctrl+C before sending any requests, nothing gets recorded, and the auto-replay afterwards prints a scary *"Keploy was never loaded into your application"* warning that blames macOS. The real cause is simply an empty recording.
+</Callout>
+
+### Stop recording and watch the auto-replay
+
+Press **Ctrl+C once** in the first tab. Keploy immediately replays what it just recorded to check for "noise":
+
+```text
+TESTRUN SUMMARY. For test-set: "test-set-1"
+  Total tests:        2
+  Total test passed:  2
+  Total test failed:  0
+```
+
+This was my a-ha moment. The response to `POST /url` includes a timestamp (`ts`) that changes every time. The official quickstart says you'll see it fail and need to add `body.ts` to the noise list by hand. On Keploy 3.8.47, the auto-replay detected it and added it for me:
+
+```yaml title="keploy/test-set-1/tests/post-url-1.yaml"
+    noise:
+      body.ts: []
+      header.Date: []
+```
+
+"Noise" means *"this field is allowed to change between runs, so don't compare it."*
+
+### See what Keploy generated
+
+```text
+keploy/
+├── test-set-0/          ← ships with the sample repo
+└── test-set-1/          ← yours
+    ├── tests/
+    │   ├── post-url-1.yaml
+    │   └── get-lhr4bwai-1.yaml
+    ├── mocks.yaml       ← the recorded MongoDB conversations
+    └── mappings.yaml    ← which mocks belong to which test
+```
+
+Each test file holds the request and the expected response. `mocks.yaml` holds what MongoDB said back, so the app can be answered without a real database.
+
+<Callout type="info">
+`test-set-0` isn't something you created. It comes with the `samples-go` repo, so `keploy test` will run it too.
+</Callout>
+
+### Run the tests yourself
+
+```bash
+keploy test -c "go run main.go handler.go" --delay 10 \
+  --disableMockUpload --disableReportUpload
+```
+
+`--delay 10` gives the app 10 seconds to start before the first request is replayed.
+
+```text
+COMPLETE TESTRUN SUMMARY.
+  Total tests: 4
+  Total test passed: 4
+  Total test failed: 0
+
+  "test-set-0"    2    2    0
+  "test-set-1"    2    2    0
+```
+
+<Callout type="tip" title="Keep your mocks on your machine">
+By default, Keploy uploads your mocks and test report to your Keploy account (you'll see `Mock uploaded successfully` in the logs). The two `--disable…Upload` flags keep everything local. There's nothing secret in this sample, but in a real app your mocks can contain API keys and user data, so it's a good habit.
+</Callout>
+
+### The proof: switch the database off
+
+Stop MongoDB and run the exact same test command:
+
+```bash
+mongosh --quiet admin --eval 'db.shutdownServer()'
+pgrep -l mongod   # prints nothing = MongoDB is off
+
+keploy test -c "go run main.go handler.go" --delay 10 \
+  --disableMockUpload --disableReportUpload
+```
+
+```text
+COMPLETE TESTRUN SUMMARY.
+  Total tests: 4
+  Total test passed: 4
+  Total test failed: 0
+```
+
+Still 4 out of 4. The app thinks it's talking to MongoDB, but every reply comes from `mocks.yaml`. That's the whole point: **your API tests no longer need a database to run.**
+
+</Steps>
+
+## Messages that look scary but aren't
+
+<Callout type="info" title="GET /keploy/__readiness_probe__ → 404">
+Before replaying, Keploy pings your app to check it's up. The sample's `GET /:param` route catches the ping and returns 404. Harmless: it just means the app answered.
+</Callout>
+
+<Callout type="info" title="sync /dev/stderr: inappropriate ioctl for device">
+Printed when the app shuts down between test sets. Harmless.
+</Callout>
+
+<Callout type="info" title="You are already on the latest version of Keploy">
+Keploy checks for updates on every run. Mine updated itself from 3.8.44 to 3.8.47 between two days of testing, so check `keploy -v` if your logs look different from someone else's.
+</Callout>
+
+## Where to go next
+
+- **Record more endpoints.** Every request you make while recording becomes another test.
+- **Run it in CI.** Keploy's default reports some broken tests as "obsolete" rather than "failed", and the run still exits 0. Add `--strict-failure` so a broken replay actually fails your pipeline. I wrote about [how I found that out on my MERN app](https://dev.to/angelina_gupta/i-ran-keploy-on-my-mern-app-the-scariest-result-was-a-green-one-331e).
+- **Read the docs.** The [Keploy documentation](https://keploy.io/docs/) covers noise configuration, CI integration, and more quickstarts.
+
+---
+
+*Written by [Angelina Gupta](https://github.com/angelina10504) as part of the Keploy DevRel assignment.*
