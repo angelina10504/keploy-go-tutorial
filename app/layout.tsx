@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { TableOfContents } from '@/components/table-of-contents'
+import { GitHubIcon } from '@/components/icon'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
@@ -24,13 +25,26 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           {themeScript}
         </Script>
         <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
             <span className="font-semibold">Keploy × Go</span>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <a
+                href="https://github.com/angelina10504/keploy-go-tutorial"
+                aria-label="Source on GitHub"
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+              >
+                <GitHubIcon className="size-4" />
+                <span className="hidden sm:inline">GitHub</span>
+              </a>
+              <ThemeToggle />
+            </div>
           </div>
         </header>
-        <div className="mx-auto flex max-w-6xl gap-12 px-4">
-          <article className="prose prose-zinc min-w-0 max-w-3xl flex-1 py-10 dark:prose-invert prose-code:before:content-none prose-code:after:content-none">
+        <div className="mx-auto flex max-w-7xl gap-10 px-4">
+          <aside className="hidden w-52 shrink-0 py-10 xl:block">
+            <TableOfContents title="Sections" sectionsOnly />
+          </aside>
+          <article className="prose prose-zinc min-w-0 max-w-4xl flex-1 py-10 dark:prose-invert prose-code:before:content-none prose-code:after:content-none">
             {children}
           </article>
           <aside className="hidden w-56 shrink-0 py-10 lg:block">

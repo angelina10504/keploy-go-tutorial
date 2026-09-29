@@ -45,9 +45,20 @@ html {
 article :is(h2, h3) {
   scroll-margin-top: 5rem;
 }
-[data-rehype-pretty-code-title] {
-  @apply rounded-t-xl border border-b-0 border-zinc-200 bg-zinc-100 px-4 py-2 font-mono text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-400;
+/* Each h2 opens a new section: extra space and a hairline above it */
+article.prose h2 {
+  @apply mt-16 border-t border-zinc-200 pt-10 dark:border-zinc-800;
 }
-[data-rehype-pretty-code-title] + pre {
+/* File title on a code block: sits flush on top of the <pre>. Pre is wrapped in a
+   div by components/pre.tsx, so match "title + div > pre", not "title + pre". */
+[data-rehype-pretty-code-title] {
+  @apply mb-0 rounded-t-xl border border-b-0 border-zinc-200 bg-zinc-100 px-4 py-2 font-mono text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-400;
+}
+[data-rehype-pretty-code-title] + div > pre {
   @apply mt-0 rounded-t-none;
+}
+
+/* Inline code in prose: subtle pill instead of bold text */
+article :not(pre) > code {
+  @apply rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.875em] font-normal text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200;
 }
