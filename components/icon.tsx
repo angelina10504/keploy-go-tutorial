@@ -1,4 +1,5 @@
 import {
+  BadgeCheck,
   Clock,
   Container,
   Database,
@@ -11,6 +12,7 @@ import {
 
 // Icons usable by name from MDX, e.g. <Concept icon="file-text">
 const icons = {
+  'badge-check': BadgeCheck,
   clock: Clock,
   container: Container,
   database: Database,

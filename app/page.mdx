@@ -14,6 +14,7 @@ export const metadata = {
     { icon: 'laptop', label: 'macOS · Apple Silicon' },
     { icon: 'container', label: 'No Docker' },
     { icon: 'tag', label: 'Keploy 3.8.47' },
+    { icon: 'badge-check', label: 'Tested on macOS (Apple Silicon) only' },
   ]}
   primary={{ label: 'Start the tutorial', href: '#run-the-quickstart' }}
   secondary={{ label: 'View source on GitHub', href: 'https://github.com/angelina10504/keploy-go-tutorial' }}
@@ -73,6 +74,12 @@ You need:
 <Callout type="warning" title="Keep the project out of iCloud">
 If your Mac syncs **Desktop** and **Documents** to iCloud, don't clone there. iCloud can move files to the cloud to save space, and your app will hang while macOS downloads them one by one. That cost me a confusing five-minute hang on another project. Use a folder like `~/dev` instead.
 </Callout>
+
+## Not on a Mac?
+
+- **Windows (x86-64):** Keploy also runs natively on Windows. Follow the [official Windows install guide](https://keploy.io/docs/installation/windows-installation/), then continue from "Clone the sample app". I haven't tested the Windows path myself, so some commands (like `sed -i ''` and `mongod --fork`) will differ.
+- **Linux / WSL:** the [official Gin + MongoDB quickstart](https://keploy.io/docs/quickstart/samples-gin/) covers this directly.
+- **Intel Mac:** there's no native build. Keploy's docs recommend [running it inside Lima](https://keploy.io/docs/installation/macos-installation/).
 
 ## Run the quickstart
 
