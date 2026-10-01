@@ -215,6 +215,8 @@ keploy/
 
 Open `tests/post-url-1.yaml`. Trimmed down, it looks like this:
 
+<CodeTabs labels={["Test: post-url-1.yaml", "Mock: mocks.yaml"]}>
+
 ```yaml title="keploy/test-set-1/tests/post-url-1.yaml (trimmed)"
 kind: Http
 name: post-url-1
@@ -232,7 +234,32 @@ spec:
       header.Date: []
 ```
 
+```yaml title="keploy/test-set-1/mocks.yaml — mock-5 (trimmed)"
+kind: Mongo
+name: mock-5
+spec:
+  requests:   # what the app asked MongoDB
+    - message:
+        sections:
+          - '{"update":"url-shortener", … "$db":"keploy"}'
+          - '{"q":{"_id":"Lhr4BWAi"},
+              "u":{"$set":{"url":"https://google.com", …}},
+              "upsert":true}'
+  responses:  # what MongoDB answered
+    - message:
+        sections:
+          - '{"n":{"$numberInt":"1"}, … "ok":{"$numberDouble":"1.0"}}'
+noise:        # timestamps that change every run
+  req:
+    - …$set.created.$date…
+    - …$set.updated.$date…
+```
+
+</CodeTabs>
+
 That's all a Keploy test is: a request, the expected response, and a list of fields to ignore.
+
+The mock is the other half. While the app handled that request, it told MongoDB to save `Lhr4BWAi` → `https://google.com`, and MongoDB replied `ok`. Keploy saved both sides. You can see they belong together from the timestamps: the mock was recorded at 11:08:21.746, inside the test's 21.714–21.823 window. During replay, Keploy gives the app that same `ok` and MongoDB never gets asked.
 
 `test-set-0` isn't something you created. It comes with the `samples-go` repo, so `keploy test` will run it too.
 

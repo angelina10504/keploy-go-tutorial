@@ -63,6 +63,14 @@ article.prose h2 {
 [data-rehype-pretty-code-title] + div > pre {
   @apply mt-0 rounded-t-none;
 }
+/* Code blocks inside <CodeTabs>: sit flush under the tab bar */
+.code-tabs figure[data-rehype-pretty-code-figure] {
+  margin: 0;
+}
+.code-tabs [data-rehype-pretty-code-title],
+.code-tabs figure[data-rehype-pretty-code-figure] pre {
+  @apply mt-0 rounded-t-none;
+}
 
 /* Inline code in prose: subtle pill instead of bold text */
 article :not(pre) > code {

@@ -8,6 +8,7 @@ import { Explain } from '@/components/explain'
 import { DocHeader } from '@/components/doc-header'
 import { AtAGlance } from '@/components/at-a-glance'
 import { Messages, Message, Footnote } from '@/components/messages'
+import { CodeTabs } from '@/components/code-tabs'
 
 const components: MDXComponents = {
   pre: Pre,
@@ -22,6 +23,7 @@ const components: MDXComponents = {
   Messages,
   Message,
   Footnote,
+  CodeTabs,
 }
 
 export function useMDXComponents(): MDXComponents {
