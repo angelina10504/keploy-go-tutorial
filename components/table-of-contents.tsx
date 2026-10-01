@@ -4,14 +4,9 @@ import { useEffect, useState } from 'react'
 
 type Heading = { id: string; text: string; level: number }
 
-export function TableOfContents({
-  title = 'On this page',
-  sectionsOnly = false,
-}: {
-  title?: string
-  /** List only the h2s (main sections) instead of h2 + h3 */
-  sectionsOnly?: boolean
-}) {
+// Reads the article's headings and tracks which one is being read.
+// Shared by the sidebars and the mobile "On this page" bar.
+export function useHeadings(sectionsOnly = false) {
   const [headings, setHeadings] = useState<Heading[]>([])
   const [active, setActive] = useState('')
 
@@ -48,6 +43,19 @@ export function TableOfContents({
       window.removeEventListener('resize', update)
     }
   }, [sectionsOnly])
+
+  return { headings, active }
+}
+
+export function TableOfContents({
+  title = 'On this page',
+  sectionsOnly = false,
+}: {
+  title?: string
+  /** List only the h2s (main sections) instead of h2 + h3 */
+  sectionsOnly?: boolean
+}) {
+  const { headings, active } = useHeadings(sectionsOnly)
 
   if (!headings.length) return null
 

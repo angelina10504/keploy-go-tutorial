@@ -5,6 +5,7 @@ import './globals.css'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { TableOfContents } from '@/components/table-of-contents'
 import { GitHubIcon } from '@/components/icon'
+import { ReadingProgress } from '@/components/reading-progress'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
@@ -29,10 +30,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+        <a
+          href="#content"
+          className="sr-only rounded-lg bg-zinc-900 text-sm font-medium text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 dark:bg-zinc-100 dark:text-zinc-900"
+        >
+          Skip to content
+        </a>
         <Script id="theme-init" strategy="beforeInteractive">
           {themeScript}
         </Script>
         <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
+          <ReadingProgress />
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
             <span className="font-semibold">Keploy × Go</span>
             <div className="flex items-center gap-2">
@@ -52,7 +60,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <aside className="hidden w-52 shrink-0 py-10 xl:block">
             <TableOfContents title="Sections" sectionsOnly />
           </aside>
-          <article className="prose prose-zinc min-w-0 max-w-4xl flex-1 py-10 dark:prose-invert prose-code:before:content-none prose-code:after:content-none">
+          <article id="content" tabIndex={-1} className="outline-none prose prose-zinc min-w-0 max-w-4xl flex-1 py-10 dark:prose-invert prose-code:before:content-none prose-code:after:content-none">
             {children}
           </article>
           <aside className="hidden w-56 shrink-0 py-10 lg:block">

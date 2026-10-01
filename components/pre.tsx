@@ -2,6 +2,15 @@
 
 import { useEffect, useRef, useState, type ComponentProps } from 'react'
 
+// Shown top-left on blocks without a file title (CSS hides it when there is one)
+const labels: Record<string, string> = {
+  bash: 'Terminal',
+  sh: 'Terminal',
+  shell: 'Terminal',
+  text: 'Output',
+  yaml: 'YAML',
+}
+
 export function Pre(props: ComponentProps<'pre'>) {
   const ref = useRef<HTMLPreElement>(null)
   const [copied, setCopied] = useState(false)
@@ -23,6 +32,8 @@ export function Pre(props: ComponentProps<'pre'>) {
     }
   }, [])
 
+  const label = labels[(props as { 'data-language'?: string })['data-language'] ?? '']
+
   const copy = async () => {
     await navigator.clipboard.writeText(ref.current?.innerText ?? '')
     setCopied(true)
@@ -30,7 +41,8 @@ export function Pre(props: ComponentProps<'pre'>) {
   }
 
   return (
-    <div className="group relative">
+    <div className="group relative" data-code-label={label ? '' : undefined}>
+      {label && <span className="code-label">{label}</span>}
       <pre ref={ref} {...props} />
       <div
         aria-hidden="true"

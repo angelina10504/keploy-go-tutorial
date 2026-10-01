@@ -63,6 +63,36 @@ article.prose h2 {
 [data-rehype-pretty-code-title] + div > pre {
   @apply mt-0 rounded-t-none;
 }
+/* Language label ("Terminal", "Output", "YAML") on blocks without a file title */
+.code-label {
+  @apply pointer-events-none absolute top-2.5 left-4 z-[1] font-mono text-[11px] tracking-wider text-zinc-400 uppercase select-none dark:text-zinc-500;
+}
+figure[data-rehype-pretty-code-figure] div[data-code-label] > pre {
+  padding-top: 2.25rem;
+}
+[data-rehype-pretty-code-title] + div > .code-label {
+  display: none;
+}
+figure[data-rehype-pretty-code-figure] [data-rehype-pretty-code-title] + div[data-code-label] > pre {
+  padding-top: 1rem;
+}
+
+/* "#" link after each h2/h3: shows on hover or keyboard focus, always on touch screens */
+article .heading-anchor {
+  @apply ml-2 rounded font-normal text-zinc-400 no-underline opacity-0 transition hover:text-orange-500 focus-visible:opacity-100 dark:text-zinc-500 dark:hover:text-orange-400;
+}
+article .heading-anchor::after {
+  content: '#';
+}
+article :is(h2, h3):hover .heading-anchor {
+  opacity: 1;
+}
+@media (hover: none) {
+  article .heading-anchor {
+    opacity: 1;
+  }
+}
+
 /* Code blocks inside <CodeTabs>: sit flush under the tab bar */
 .code-tabs figure[data-rehype-pretty-code-figure] {
   margin: 0;
