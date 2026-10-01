@@ -9,9 +9,17 @@ import { GitHubIcon } from '@/components/icon'
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
 
+// Same title and description as app/page.mdx, so link previews match the page
+const title = 'Test a Go API without writing tests — Keploy + Gin + MongoDB on macOS'
+const description =
+  'A beginner-friendly walkthrough of the Keploy Gin + MongoDB quickstart, run natively on an Apple Silicon Mac.'
+
 export const metadata: Metadata = {
-  title: 'Keploy + Go on macOS',
-  description: 'Record and replay API tests for a Gin + MongoDB app with Keploy, natively on macOS.',
+  metadataBase: new URL('https://keploy-go-tutorial-seven.vercel.app'),
+  title,
+  description,
+  openGraph: { type: 'article', title, description, siteName: 'Keploy x Go', url: '/' },
+  twitter: { card: 'summary_large_image', title, description },
 }
 
 // Runs before the page paints: applies saved theme (or system preference) to avoid a flash
