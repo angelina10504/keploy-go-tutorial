@@ -204,13 +204,13 @@ The response to `POST /url` includes a timestamp (`ts`) that's different every t
 
 ```text
 keploy/
-├── test-set-0/          ← ships with the sample repo
-└── test-set-1/          ← yours
+├── test-set-0/  ← from the repo
+└── test-set-1/  ← yours
     ├── tests/
     │   ├── post-url-1.yaml
     │   └── get-lhr4bwai-1.yaml
-    ├── mocks.yaml       ← the recorded MongoDB conversations
-    └── mappings.yaml    ← which mocks belong to which test
+    ├── mocks.yaml    ← DB mocks
+    └── mappings.yaml ← mock map
 ```
 
 Open `tests/post-url-1.yaml`. Trimmed down, it looks like this:
@@ -219,15 +219,15 @@ Open `tests/post-url-1.yaml`. Trimmed down, it looks like this:
 kind: Http
 name: post-url-1
 spec:
-  req:                    # ← the request you sent with curl
+  req:   # your curl request
     method: POST
     url: http://localhost:8080/url
     body: '{"url":"https://google.com"}'
-  resp:                   # ← what the app answered: the expected result
+  resp:  # expected response
     status_code: 200
     body: '{"ts":…,"url":"http://localhost:8080/Lhr4BWAi"}'
   assertions:
-    noise:                # ← fields Keploy won't compare
+    noise: # fields not compared
       body.ts: []
       header.Date: []
 ```

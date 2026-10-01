@@ -16,7 +16,13 @@ figure[data-rehype-pretty-code-figure] {
   margin: 1.5rem 0;
 }
 figure[data-rehype-pretty-code-figure] pre {
-  @apply overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200;
+  @apply overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-[13px] text-zinc-800 sm:text-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200;
+}
+/* Plain-text output (logs, summaries) wraps; bash and yaml keep scrolling sideways */
+figure[data-rehype-pretty-code-figure] pre[data-language="text"],
+figure[data-rehype-pretty-code-figure] pre[data-language="text"] code {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 code[data-theme*=" "],
 code[data-theme*=" "] span {
